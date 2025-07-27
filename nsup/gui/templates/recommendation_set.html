@@ -1,0 +1,56 @@
+<div class="tab" data-name="Схема питания {{scheme_num}}">
+    <h1>Производные параметры</h1>
+    <div class="recommendation_block" id="derived_params_div">
+        <table>
+            <tbody>
+            {% for param in derived_parameters %}
+            <tr>
+                <td>{{param}}</td>
+                <td>{{derived_parameters[param]}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h1>Доли типов питания</h1>
+    <div class="recommendation_block" id="nutrition_fraction_div">
+        <table>
+            <tbody>
+            {% for _type in nutr_fractions %}
+            <tr>
+                <td>{{_type}}</td>
+                <td>{{nutr_fractions[_type]}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    {% for nutr_kind in ["ПЭП", "сипинг", "зонд"] %}
+    <h1>{{nutr_kind}}</h1>
+    <div class="recommendation_block" id="nutrition-{{nutr_kind}}">
+        <table><tbody>
+            {% for key in nutritions[nutr_kind] %}
+<!--            {% for nutrition in nutritions[nutr_kind]["Назначения"] %}-->
+            <tr>
+                <td>{{key}}</td>
+                <td>
+                    <table><tbody>
+                    {% for in_key in nutrition[nutr_kind][key] %}
+                    <tr>
+                        <td>{{in_key}}:</td>
+                        <td>{{nutrition[nutr_kind][key][in_key]}}</td>
+<!--                        <td>{{feature["units"] if feature["units"] is not null else ''}}</td>-->
+                    </tr>
+                    {% endfor %}
+                    </tbody></table>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody></table>
+    </div>
+
+    {% endfor %}
+</div>

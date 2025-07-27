@@ -1,0 +1,129 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="{{url_for('static', filename='ui_elements.css')}}">
+		<link rel="stylesheet/less" type="text/css" href="{{url_for('static', filename='tabs.css')}}" />
+		<script src="https://cdn.jsdelivr.net/npm/less" ></script>
+		<script src="{{url_for('static', filename='input_handlers.js')}}"></script>
+		<meta name="viewport" content="width=device-width", initial-scale=1.0>
+		<title>Нутритивная поддержка</title>
+	</head>
+	<body>
+		<form action="./" method="post" style="width: 100%, height: 100%">
+			<div class="tabs" id="tabbedForm" style="width: 100%; height: 100%">
+				<nav class="tab-nav"><div style="overflow: auto; display: flex; width: 100%; height: 100%;"></div></nav>
+					{% for data_kind in req_data %}
+						<div class="tab" data-name="{{ data_kind }}">
+							<table>
+							{% for item in req_data[data_kind]  %}
+							
+							{%macro make_data_item(item, make_label) -%}
+							
+								{% if item['type'] != "button" and make_label == true %}
+								
+								<td><span title="Это поле должно быть заполнено" style="color:red; font-size:150%">{{"*" if item['is_required'] == 1 else ""}}</span><label for="{{item['id']}}">{{item['label']}}</label></td>
+								
+								{% else %}
+								<td></td>
+
+								{% endif %}
+								
+								
+								<td>
+							{% if item['type'] == 'input' %}
+								{% if item['dtype'] == 'date' %}
+								<div>
+								<button type="button" id="{{item['id']}}-" onclick="decDate(this)">-</button>
+								{% endif %}
+								
+								<input type="{{item['dtype']}}" id="{{item['id']}}" name="{{item['id']}}" {{item['onChangeMethod']}}="{{item['onChange']}}" {{'required' if item['is_required'] == 1 else ''}} />
+								
+								{% if item['dtype'] == 'date' %}
+								<button type="button" id = "{{item['id']}}+" onclick="incDate(this)">+</button>
+								</div>
+								{% endif %}
+							{% endif %}	
+							
+							{% if item['type'] == 'select' %}
+								<select id="{{item['id']}}" name="{{item['id']}}">
+									<option value=""></option>
+									{% for option in item['options'] %}
+									<option value="{{option['id']}}">{{option['name']}}</option>
+									{% endfor %}
+								</select>
+							{% endif %}
+							
+							{% if item['type'] == 'radio' %}
+								{% for option in item['options'] %}
+								<input type="radio" id="{{item['id']}}-{{option['id']}}" name="{{item['id']}}" value="{{option['id']}}"/>
+								<label for="{{item['id']}}-{{option['id']}}">{{option['name']}}</label>
+								{% endfor %}
+							{% endif %}
+
+							{% if item['type'] == 'switch' %}
+								
+								{{ item['options'][0]['name'] }}
+								<label class="switch">	
+									<input type="checkbox" id="{{item['id']}}" name="{{item['id']}}"/>
+									<span class="slider round"></span>
+								</label>
+								{{ item['options'][1]['name'] }}	
+							{% endif %}
+
+							{% if item['type'] == 'datalist' %}
+								<input list="{{item['id']}}">
+								<datalist id="{{item['id']}}">
+									{% for opt in item['options'] %}
+										<option value="{{opt['name']}}">
+									{% endfor %}
+								</datalist>
+
+							{% endif %}
+
+							{% if item['type'] == 'vstack' %}
+								<table>
+									{% for subitem in item["options"] %}
+									<tr>
+										{{ make_data_item(subitem, true) }}
+									</tr>
+									{% endfor %}
+								</table>
+							{% endif %}
+
+							{% if item['type'] == 'hstack' %}
+								<table>
+									<tr>
+										{{ make_data_item(item["options"][0], true)}}
+										{% for subitem in item["options"][1:] %}
+										{{ make_data_item(subitem, false) }}
+										{% endfor%}
+									</tr>
+								</table>
+							{% endif %}
+
+							{% if item['type'] == 'button' %}
+								<button onclick="{{item['onChange']}}">{{item['label']}}</button>
+							{% endif %}
+							
+							</td>
+							<td>{{ item['units'] if item['units'] is not none else ""}}</td>
+							
+
+							{%- endmacro %}
+
+
+							<tr>
+							{{make_data_item(item, true) }}	
+							</tr>
+
+							{% endfor %}
+							</table>
+						</div>
+					{% endfor %}
+				
+				<nav class="tab-pag"><div style="text-align: right; overflow: auto; display: flex; height: 100%;"></div></nav>
+			</div>
+		</form>
+		<script src="{{url_for('static', filename='tabs.js')}}"></script>
+	</body>
+
+</html>

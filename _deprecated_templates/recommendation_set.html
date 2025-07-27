@@ -1,0 +1,54 @@
+<div style="width: 100%; height: 100%;" data-name="Схема питания {{scheme_num}}">
+    <h1>Производные параметры</h1>
+    <div class="recommendation_block" id="derived_params_div">
+        <table>
+            <tbody>
+            {% for param in derived_parameters %}
+            <tr>
+                <td>{{param}}</td>
+                <td>{{derived_parameters[param]}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h1>Требования</h1>
+    <div class="recommendation_block" id="derived_params_div">
+        <table>
+            <tbody>
+            {% for param in demands %}
+            <tr>
+                <td>{{param}}</td>
+                <td>{{demands[param]}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% for nutr_kind in ["ПЭП", "ЭП"] %}
+    <h1>{{nutr_kind}}</h1>
+    <div class="recommendation_block" id="nutrition-{{nutr_kind}}">
+        <table><tbody>
+            {% for nutrition in nutritions[nutr_kind] %}
+            <tr>
+                <td>{{nutrition['name']}}</td>
+                <td>
+                    <table><tbody>
+                    {% for feature in nutrition["features"] %}
+                    <tr>
+                        <td>{{feature["name"]}}:</td>
+                        <td>{{feature["value"]}}</td>
+                        <td>{{feature["units"] if feature["units"] is not none else ''}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody></table>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody></table>
+    </div>
+
+    {% endfor %}
+</div>
