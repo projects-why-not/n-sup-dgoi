@@ -60,6 +60,7 @@ class DBProvider:
         return out_dict
 
     def get_clinical_limits(self, analysis_name, sex, age):
+        # print("Getting limits for", analysis_name)
         all_limits = self.wrapper.get_clinical_limits(analysis_name, sex)
 
         age_keys = {"D": "дней", "M": "мес", "W": "нед", "Y": "лет"}
@@ -69,7 +70,7 @@ class DBProvider:
 
             print()
 
-            if low_age <= age < high_age:
+            if (low_age <= age) and (age < high_age):
                 return option[-2:]
 
     def get_derived_parameters(self):

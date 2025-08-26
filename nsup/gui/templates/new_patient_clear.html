@@ -4,74 +4,76 @@
 		<link rel="stylesheet/less" type="text/css" href="{{url_for('static', filename='tabs.css')}}" />
 		<script src="https://cdn.jsdelivr.net/npm/less" ></script>
 		<script src="{{url_for('static', filename='input_handlers.js')}}"></script>
+		<script src="{{url_for('static', filename='submit_handlers.js')}}"></script>
 		<meta name="viewport" content="width=device-width", initial-scale=1.0>
 		<title>Нутритивная поддержка</title>
 	</head>
-	<body>
-		<form action="./" method="post" style="width: 100%, height: 100%">
+	<body><div style="width: 100%; height: 100%; margin: 0;">
+		<form id="main_form" style="width: 100%, height: 100%">
 			<div class="tabs" id="tabbedForm" style="width: 100%; height: 100%">
 				<nav class="tab-nav"><div style="overflow: auto; display: flex; width: 100%; height: 100%;"></div></nav>
+					<div class="tab" data-name="БД" id="tab_db"></div>
+
 					{% for data_kind in req_data %}
-						<div class="tab" data-name="{{ data_kind }}">
+						<div class="tab" data-name="{{data_kind[1]}}">
 							<table>
 							{% for item in req_data[data_kind]  %}
-							
-							{%macro make_data_item(item, make_label) -%}
-							
+
+							{%macro make_data_item(item, make_label, id_prefix) -%}
+
 								{% if item['type'] != "button" and make_label == true %}
-								
-								<td><span title="Это поле должно быть заполнено" style="color:red; font-size:150%">{{"*" if item['is_required'] == 1 else ""}}</span><label for="{{item['id']}}">{{item['label']}}</label></td>
-								
+
+								<td><span title="Это поле должно быть заполнено" style="color:red; font-size:150%">{{"*" if item['is_required'] == 1 else ""}}</span><label for="{{id_prefix + item['id']|string}}">{{item['label']}}</label></td>
+
 								{% else %}
 								<td></td>
 
 								{% endif %}
-								
-								
+
+
 								<td>
 							{% if item['type'] == 'input' %}
 								{% if item['dtype'] == 'date' %}
 								<div>
-								<button type="button" id="{{item['id']}}-" onclick="decDate(this)">-</button>
+								<button type="button" id="{{id_prefix + item['id']|string}}-" onclick="decDate(this)">-</button>
 								{% endif %}
-								
-								<input type="{{item['dtype']}}" id="{{item['id']}}" name="{{item['id']}}" {{item['onChangeMethod']}}="{{item['onChange']}}" {{'required' if item['is_required'] == 1 else ''}} />
-								
+								<input type="{{item['dtype']}}" id="{{id_prefix + item['id']|string}}" name="{{id_prefix + item['id']|string}}" {{item['onChangeMethod']}}="{{item['onChange'] if item['onChange'] is not none else ''}}" {{item['attributes'] if item['attributes'] is not none}}  {{'required' if item['is_required'] == 1 else ''}} />
+
 								{% if item['dtype'] == 'date' %}
-								<button type="button" id = "{{item['id']}}+" onclick="incDate(this)">+</button>
+								<button type="button" id = "{{id_prefix + item['id']|string}}+" onclick="incDate(this)">+</button>
 								</div>
 								{% endif %}
-							{% endif %}	
-							
+							{% endif %}
+
 							{% if item['type'] == 'select' %}
-								<select id="{{item['id']}}" name="{{item['id']}}">
+							<select id="{{id_prefix + item['id']|string}}" name="{{id_prefix + item['id']|string}}" onchange="{{item['onChange'] if item['onChange'] is not none else ''}}">
 									<option value=""></option>
 									{% for option in item['options'] %}
-									<option value="{{option['id']}}">{{option['name']}}</option>
+									<option value="{{option['id']}}" {{'selected' if item['defaultValue'] == option['id']|string}}>{{option['name']}}</option>
 									{% endfor %}
 								</select>
 							{% endif %}
-							
+
 							{% if item['type'] == 'radio' %}
 								{% for option in item['options'] %}
-								<input type="radio" id="{{item['id']}}-{{option['id']}}" name="{{item['id']}}" value="{{option['id']}}"/>
-								<label for="{{item['id']}}-{{option['id']}}">{{option['name']}}</label>
+								<input type="radio" id="{{id_prefix + item['id']|string}}-{{option['id']}}" name="{{id_prefix + item['id']|string}}" value="{{option['id']}}"/>
+								<label for="{{id_prefix + item['id']|string}}-{{option['id']}}">{{option['name']}}</label>
 								{% endfor %}
 							{% endif %}
 
 							{% if item['type'] == 'switch' %}
-								
+
 								{{ item['options'][0]['name'] }}
-								<label class="switch">	
-									<input type="checkbox" id="{{item['id']}}" name="{{item['id']}}"/>
+								<label class="switch">
+									<input type="checkbox" id="{{id_prefix + item['id']|string}}" name="{{id_prefix + item['id']|string}}"/>
 									<span class="slider round"></span>
 								</label>
-								{{ item['options'][1]['name'] }}	
+								{{ item['options'][1]['name'] }}
 							{% endif %}
 
 							{% if item['type'] == 'datalist' %}
-								<input list="{{item['id']}}">
-								<datalist id="{{item['id']}}">
+							<input list="{{id_prefix + item['id']|string}}" name="{{id_prefix + item['id']|string}}" onChange="{{item['onChange'] if item['onChange'] is not none else ''}}">
+								<datalist id="{{id_prefix + item['id']|string}}">
 									{% for opt in item['options'] %}
 										<option value="{{opt['name']}}">
 									{% endfor %}
@@ -83,7 +85,11 @@
 								<table>
 									{% for subitem in item["options"] %}
 									<tr>
-										{{ make_data_item(subitem, true) }}
+										{% if item['id'] in [81, 82, 140]%}
+										{{make_data_item(subitem, true, id_prefix + "*1*" + item['id']|string + "_")}}
+										{% else %}
+										{{ make_data_item(subitem, true, id_prefix + item['id']|string + "_") }}
+										{% endif %}
 									</tr>
 									{% endfor %}
 								</table>
@@ -92,38 +98,41 @@
 							{% if item['type'] == 'hstack' %}
 								<table>
 									<tr>
-										{{ make_data_item(item["options"][0], true)}}
-										{% for subitem in item["options"][1:] %}
-										{{ make_data_item(subitem, false) }}
+
+										{% for subitem in item["options"] %}
+										{{ make_data_item(subitem, false, id_prefix + item['id']|string + "_") }}
 										{% endfor%}
 									</tr>
 								</table>
 							{% endif %}
 
 							{% if item['type'] == 'button' %}
-								<button onclick="{{item['onChange']}}">{{item['label']}}</button>
+								<button onclick="{{item['onChange']}} return false;">{{item['label']}}</button>
 							{% endif %}
-							
+
 							</td>
 							<td>{{ item['units'] if item['units'] is not none else ""}}</td>
-							
+
 
 							{%- endmacro %}
 
 
 							<tr>
-							{{make_data_item(item, true) }}	
+								{{make_data_item(item, true, data_kind[0]|string + "^") }}
 							</tr>
 
 							{% endfor %}
 							</table>
 						</div>
 					{% endfor %}
-				
+
 				<nav class="tab-pag"><div style="text-align: right; overflow: auto; display: flex; height: 100%;"></div></nav>
 			</div>
+
+			<input type="hidden" name="only_en" value={{1 if only_en else 0}} />
+			<input type="hidden" name="only_pen" value={{1 if only_pen else 0}}  />
 		</form>
 		<script src="{{url_for('static', filename='tabs.js')}}"></script>
-	</body>
+	</div></body>
 
 </html>

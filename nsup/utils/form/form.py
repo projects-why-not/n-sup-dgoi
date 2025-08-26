@@ -1,6 +1,6 @@
 import json
 from time import time
-from datetime import date
+from datetime import date, datetime
 from random import random
 from ..value import Value, str_is_unit, Analysis
 
@@ -9,6 +9,64 @@ def form_to_json(form_dict, field_mapping):
     out_dict = form_dict
     fname = str(time()) + str(random()).split(".")[1] + ".json"
     # TODO
+
+
+def file_to_dict(contents):
+    def str_to_genitive(s):
+        pts = s.split()
+        if pts[0][-1] == "а":
+            pts[0] = pts[0][:-1] + "ы"
+        elif pts[0][-1] == "т":
+            pts[0] = pts[0] + "а"
+        return " ".join(pts)
+
+    def _unpack_analysis_items(form_dict):
+        form_dict = form_dict
+        cur_date = form_dict["Дата консультации"]
+        for k, v in form_dict.items():
+            if type(v) is not dict:
+                continue
+            if k not in v:
+                continue
+
+            form_dict[k] = Analysis(v)
+
+            # TODO: интервал доверия к анализам
+
+            # FIXME: default values for analyses
+            # form_dict[k][v + "-raw"] = form_dict[k][v]
+
+            # form_dict[k][v] = form_dict[k][v]
+
+        return form_dict
+
+    # contents = up_file.read()
+
+    out_dict = json.loads(contents)
+
+    # MARK: datetime processing
+    for k, v in out_dict.items():
+        if v == "N/A":
+            out_dict[k] = None
+        elif type(v) is str and v.find("datetime") == 0:
+            out_dict[k] = datetime.strptime(v, "datetime.date(%Y, %m, %d)").date()
+        elif type(v) is dict and "Дата анализа" in v.keys():
+            out_dict[k]["Дата анализа"] = datetime.strptime(v["Дата анализа"],
+                                                            "datetime.date(%Y, %m, %d)").date()
+
+    out_dict = _unpack_analysis_items(out_dict)
+
+    for f_name in ["Масса тела", "Рост"]:
+        unit_field_name = "единицы измерения " + str_to_genitive(f_name).lower()
+        f_value = Value(out_dict[f_name], out_dict[unit_field_name])
+        out_dict[f_name] = f_value
+
+    # out_dict["only_en"] = out_dict["only_en"]
+    # out_dict["only_pen"] = out_dict["only_pen"]
+
+    print(out_dict)
+
+    return out_dict
 
 
 def form_to_dict(form_dict, field_mapping):
@@ -101,8 +159,13 @@ def form_to_dict(form_dict, field_mapping):
                             "Доля энтерального питания (сипинг)",
                             "Доля энтерального питания (зонд/стома)"]:
                 return f_name, 0
+            elif f_name in ["ID", "Основной диагноз"]:
+                return f_name, None
+            elif f_name == "Cколько часов в сутках доступно для потенциального ПЭП":
+                return f_name, 24
             else:
-                raise Exception(f"How can it be?? {field['type'], field['label']}, id: {field_form_id}")
+                return f_name, None
+                # raise Exception(f"How can it be?? {field['type'], field['label']}, id: {field_form_id}")
 
         if "options" in field and field["type"] != "datalist":
             if field["type"] == "switch":
@@ -150,6 +213,9 @@ def form_to_dict(form_dict, field_mapping):
         out_dict[f_name] = f_value
 
     out_dict = _unpack_analysis_items(out_dict)
+
+    out_dict["only_en"] = form_dict["only_en"]
+    out_dict["only_pen"] = form_dict["only_pen"]
 
     return out_dict
 

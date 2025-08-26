@@ -8,6 +8,8 @@ class ParameterImputer:
     def impute(cls, data_dict, db_wrapper):
         # FIXME: access to protected field!
         params_to_impute = [row[0] for row in db_wrapper.wrapper._select("SELECT DISTINCT name FROM clinical_limits")]
+        # print(params_to_impute)
+        # input("goon?")
         for analysis in params_to_impute:
             data_dict["Min*" + analysis], data_dict["Max*" + analysis] = db_wrapper.get_clinical_limits(analysis,
                                                                                                         data_dict["Пол"],

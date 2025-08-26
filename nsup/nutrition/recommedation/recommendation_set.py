@@ -12,8 +12,7 @@ class RecommendationSet:
         self._derived_params = {k: data_dict[k]
                                 for k in data_dict["Производные параметры"]}
         self._recommendations = {"ПЭП": {},
-                                 "сипинг": {},
-                                 "зонд": {}}
+                                 "ЭП": {}}
         self._mass = data_dict["Масса тела"]["кг"]
         self._fractions = data_dict["fractions"]
 

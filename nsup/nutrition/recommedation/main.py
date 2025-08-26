@@ -22,16 +22,20 @@ class NutritionRecommender:
 
     def get_recommendations(self):
         recommendations = [self._get_rec_set(d_dict) for d_dict in self.patient.data]
+        recommendations = [{"Произволные параметры": rec._derived_params,
+                            "Рекомендации": rec._recommendations}
+                           for rec in recommendations]
         for i in range(len(recommendations)):
             recommendations[i]["id"] = i
+
         return recommendations
 
     def _get_rec_set(self, data_dict):
         due_demands = self._compute_due_demands(data_dict)
 
-        # fractions = NutritionTypeFractions.get_from_form(**data_dict)
-        # data_dict["fractions"] = fractions
-        recom_set = {}
+        fractions = NutritionTypeFractions.get_from_form(**data_dict)
+        data_dict["fractions"] = fractions
+        recom_set = RecommendationSet(data_dict)
 
         recom_set["ПЭП"] = self._get_pen_recommendations(data_dict)
 
@@ -43,8 +47,8 @@ class NutritionRecommender:
                                                        data_dict["Рост"]["м"])
 
         recom_set["Энергия основного обмена"] = energy_basic
-        recom_set["due_demands"]["ЭП"] = {k: recom_set["due_demands"]["ЭП"][k] for k in
-                                          ["Энергия основного обмена", "ККал", "Белок", "Жиры", "Углеводы"]}
+        # recom_set["due_demands"]["ЭП"] = {k: recom_set["due_demands"]["ЭП"][k] for k in
+        #                                   ["Энергия основного обмена", "ККал", "Белок", "Жиры", "Углеводы"]}
 
         return recom_set
 
